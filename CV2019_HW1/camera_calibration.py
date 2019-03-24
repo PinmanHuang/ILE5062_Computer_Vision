@@ -4,6 +4,10 @@ import glob
 import matplotlib.pyplot as plt
 import camera_calibration_show_extrinsics as show
 from PIL import Image
+
+DEBUG = True
+img_num = 0
+
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 # (8,6) is for the given testing images.
 # If you use the another data (e.g. pictures you take by your smartphone), 
@@ -23,9 +27,12 @@ images = glob.glob('data/*.jpg')
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
 for idx, fname in enumerate(images):
+    if DEBUG and img_num == 1:
+        break
     img = cv2.imread(fname)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    plt.imshow(gray)
+    plt.imshow(gray, cmap='gray')
+    plt.show()
 
     #Find the chessboard corners
     print('find the chessboard corners of',fname)
@@ -38,8 +45,10 @@ for idx, fname in enumerate(images):
 
         # Draw and display the corners
         cv2.drawChessboardCorners(img, (corner_x,corner_y), corners, ret)
-        plt.imshow(img)
-
+        
+        plt.imshow(img, cmap='gray')
+        plt.show()
+    img_num += 1
 
 #######################################################################################################
 #                                Homework 1 Camera Calibration                                        #
@@ -66,6 +75,7 @@ Write your code here
 
 
 """
+
 # show the camera extrinsics
 print('Show the camera extrinsics')
 # plot setting
