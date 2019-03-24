@@ -7,6 +7,52 @@ from PIL import Image
 
 DEBUG = True
 img_num = 0
+d_img_len = 1
+
+##########################################################################################
+# Compute View Homography 
+# N: the number of corner points                                                               #
+# | x |   | h11 h12 h13 |   | U |                                                        #
+# | y | = | h21 h22 h23 | . | V |                                                        #
+# | z |   | h31 h32 h33 |   | 1 |                                                        #
+# u = x/z , v = y/z                                                                      #
+# => u = (h11U+h12V+h13)/(h31U+h32V+h33), v = (h21U+h22V+h23)/(h31U+h32V+h33)            #
+# => (h11U+h12V+h13)-u(h31U+h32V+h33) = 0, (h21U+h22V+h23)-v(h31U+h32V+h33) = 0          #
+#                                          | h11 |                                       #
+#                                          | h12 |                                       #
+#                                          | h13 |                                       #
+# | U   V   1   0   0   0   -uU -uV -u |   | h21 |                                       #
+# | 0   0   0   U   V   1   -vU -vV -v | . | h22 | = 0                                   #
+#                                          | h23 |                                       #
+#                                          | h31 |                                       #
+#                                          | h32 |                                       #
+#                                          | h33 |                                       #
+#                   P(2N*9)                 h(9*1) = 0                                   #
+##########################################################################################
+def compute_view_homography(imgpoints, objpoints):
+    print('Homography for View...')
+    # N = len(imgpoints)
+    N = 5
+    P = np.zeros((2*N, 9), dtype=np.float64)    # initialize P matrix, each corner will contribute two rows
+
+    # create P matrix
+    for i in range(N):
+        U, V, W = objpoints[i]
+        u, v = imgpoints[i][0]
+
+        row_1 = np.array([U, V, 1, 0, 0, 0, -u*U, -u*V, -u])
+        row_2 = np.array([0, 0, 0, U, V, 1, -v*U, -v*V, -v])
+        P[2*i] = row_1
+        P[2*i+1] = row_2
+
+        # print("P_model {0} \tp_row {1}".format(2*i, P[2*i]))
+        # print("P_model {0} \tp_row {1}".format(2*i+1, P[2*i+1]))
+    
+    print("P: {0}\n{1}".format(P.shape, P))
+    u, s, vh = np.linalg.svd(P, full_matrices=False)
+    print("u: {0}\n{1}".format(u.shape, u))
+    print("s: {0}\n{1}".format(s.shape, s))
+    print("vh: {0}\n{1}".format(vh.shape, vh))
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 # (8,6) is for the given testing images.
@@ -27,7 +73,7 @@ images = glob.glob('data/*.jpg')
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
 for idx, fname in enumerate(images):
-    if DEBUG and img_num == 1:
+    if DEBUG and img_num == d_img_len:
         break
     img = cv2.imread(fname)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -61,6 +107,7 @@ for idx, fname in enumerate(images):
 #######################################################################################################
 print('Camera calibration...')
 img_size = (img.shape[1], img.shape[0])
+""""""
 # You need to comment these functions and write your calibration function from scratch.
 # Notice that rvecs is rotation vector, not the rotation matrix, and tvecs is translation vector.
 # In practice, you'll derive extrinsics matrixes directly. The shape must be [pts_num,3,4], and use them to plot.
@@ -68,13 +115,10 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_siz
 Vr = np.array(rvecs)
 Tr = np.array(tvecs)
 extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
-"""
-Write your code here
-
-
-
-
-"""
+""""""
+for i in range(len(imgpoints)):
+    print(i)
+    compute_view_homography(imgpoints[i], objpoints[i])
 
 # show the camera extrinsics
 print('Show the camera extrinsics')
@@ -126,3 +170,4 @@ for angle in range(0, 360):
     plt.draw()
     plt.pause(.001)
 """
+
