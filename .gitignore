@@ -126,4 +126,7 @@ dmypy.json
 .vscode
 
 # mac
+# General
 .DS_Store
+.AppleDouble
+.LSOverride
