@@ -7,33 +7,33 @@ from PIL import Image
 
 DEBUG = True
 img_num = 0
-d_img_len = 1
+d_img_len = 3
 
-##########################################################################################
-# Compute View Homography 
-# N: the number of corner points                                                               #
-# | x |   | h11 h12 h13 |   | U |                                                        #
-# | y | = | h21 h22 h23 | . | V |                                                        #
-# | z |   | h31 h32 h33 |   | 1 |                                                        #
-# u = x/z , v = y/z                                                                      #
-# => u = (h11U+h12V+h13)/(h31U+h32V+h33), v = (h21U+h22V+h23)/(h31U+h32V+h33)            #
-# => (h11U+h12V+h13)-u(h31U+h32V+h33) = 0, (h21U+h22V+h23)-v(h31U+h32V+h33) = 0          #
-#                                          | h11 |                                       #
-#                                          | h12 |                                       #
-#                                          | h13 |                                       #
-# | U   V   1   0   0   0   -uU -uV -u |   | h21 |                                       #
-# | 0   0   0   U   V   1   -vU -vV -v | . | h22 | = 0                                   #
-#                                          | h23 |                                       #
-#                                          | h31 |                                       #
-#                                          | h32 |                                       #
-#                                          | h33 |                                       #
-#                   P(2N*9)                 h(9*1) = 0                                   #
-##########################################################################################
+#####################################################################################
+#                           Compute View Homography                                 #
+#   N: the number of corner points                                                  #
+#   | x |   | h11 h12 h13 |   | U |                                                 #
+#   | y | = | h21 h22 h23 | . | V |                                                 #
+#   | z |   | h31 h32 h33 |   | 1 |                                                 #
+#   u = x/z , v = y/z                                                               #
+#   => u = (h11U+h12V+h13)/(h31U+h32V+h33), v = (h21U+h22V+h23)/(h31U+h32V+h33)     #
+#   => (h11U+h12V+h13)-u(h31U+h32V+h33) = 0, (h21U+h22V+h23)-v(h31U+h32V+h33) = 0   #
+#                                            | h11 |                                #
+#                                            | h12 |                                #
+#                                            | h13 |                                #
+#   | U   V   1   0   0   0   -uU -uV -u |   | h21 |                                #
+#   | 0   0   0   U   V   1   -vU -vV -v | . | h22 | = 0                            #
+#                                            | h23 |                                #
+#                                            | h31 |                                #
+#                                            | h32 |                                #
+#                                            | h33 |                                #
+#                     P(2N*9)                 h(9*1) = 0                            #
+#####################################################################################
 def compute_view_homography(imgpoints, objpoints):
     print('Homography for View...')
-    # N = len(imgpoints)
-    N = 5
-    P = np.zeros((2*N, 9), dtype=np.float64)    # initialize P matrix, each corner will contribute two rows
+    N = len(imgpoints)
+    # N = 8   # N needs bigger than 8, because imgpoints are in order, if we choose less than 8 points, it will be a line
+    P = np.zeros((2*N, 9))    # initialize P matrix, each corner will contribute two rows
 
     # create P matrix
     for i in range(N):
@@ -48,11 +48,14 @@ def compute_view_homography(imgpoints, objpoints):
         # print("P_model {0} \tp_row {1}".format(2*i, P[2*i]))
         # print("P_model {0} \tp_row {1}".format(2*i+1, P[2*i+1]))
     
-    print("P: {0}\n{1}".format(P.shape, P))
+    # print("P: {0}\n{1}".format(P.shape, P))
     u, s, vh = np.linalg.svd(P, full_matrices=False)
-    print("u: {0}\n{1}".format(u.shape, u))
-    print("s: {0}\n{1}".format(s.shape, s))
-    print("vh: {0}\n{1}".format(vh.shape, vh))
+    # print("u: {0}\n{1}".format(u.shape, u))
+    # print("s: {0}\n{1}".format(s.shape, s))
+    # print("vh: {0}\n{1}".format(vh.shape, vh))
+    h = vh[np.argmin(s)]
+    print("h: {0}\n{1}".format(h.shape, h))
+    return h
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 # (8,6) is for the given testing images.
@@ -69,6 +72,7 @@ imgpoints = [] # 2d points in image plane.
 
 # Make a list of calibration images
 images = glob.glob('data/*.jpg')
+sorted(glob.glob('*.png'))
 
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
@@ -77,12 +81,12 @@ for idx, fname in enumerate(images):
         break
     img = cv2.imread(fname)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    plt.imshow(gray, cmap='gray')
-    plt.show()
+    # plt.imshow(gray, cmap='gray')
+    # plt.show()
 
     #Find the chessboard corners
     print('find the chessboard corners of',fname)
-    ret, corners = cv2.findChessboardCorners(gray, (corner_x,corner_y), None)
+    ret, corners = cv2.findChessboardCorners(gray, (corner_x,corner_y), None)   # search from top-left
 
     # If found, add object points, image points
     if ret == True:
@@ -92,8 +96,8 @@ for idx, fname in enumerate(images):
         # Draw and display the corners
         cv2.drawChessboardCorners(img, (corner_x,corner_y), corners, ret)
         
-        plt.imshow(img, cmap='gray')
-        plt.show()
+        # plt.imshow(img, cmap='gray')
+        # plt.show()
     img_num += 1
 
 #######################################################################################################
@@ -116,9 +120,11 @@ Vr = np.array(rvecs)
 Tr = np.array(tvecs)
 extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
 """"""
+
+h = np.zeros((img_num, 9))    # homography 1D matrix of all images (img_num*9)
 for i in range(len(imgpoints)):
-    print(i)
-    compute_view_homography(imgpoints[i], objpoints[i])
+    h[i] = compute_view_homography(imgpoints[i], objpoints[i])
+# print("h: {0}\n{1}".format(h.shape, h))
 
 # show the camera extrinsics
 print('Show the camera extrinsics')
@@ -161,7 +167,7 @@ ax.set_xlabel('x')
 ax.set_ylabel('z')
 ax.set_zlabel('-y')
 ax.set_title('Extrinsic Parameters Visualization')
-plt.show()
+# plt.show()
 
 #animation for rotating plot
 """
