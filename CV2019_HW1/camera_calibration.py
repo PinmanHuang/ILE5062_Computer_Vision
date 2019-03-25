@@ -57,10 +57,55 @@ def compute_view_homography(imgpoints, objpoints):
     print("h: {0}\n{1}".format(h.shape, h))
     return h
 
+#################################################################################################################################################################
+#                       Compute Symmetric Positive Matrix                                                                                                       #
+#   N = images numbers (needing at least 3 images to compute b matrix)                                                                                          #
+#   Vb = 0                                                                                                                                                      #
+#   h = | h11 h12 h13 h21 h22 h23 h31 h32 h33 |                                                                                                                 #
+#       | h11 h12 h13 |                                                                                                                                         #
+#   H = | h21 h22 h23 | = | h1 h2 h3 |                                                                                                                          #
+#       | h31 h32 h33 |                                                                                                                                         #
+#       | b11 b12 b13 |                                                                                                                                         #
+#   B = | b12 b22 b23 |                                                                                                                                         #
+#       | b13 b23 b33 |                                                                                                                                         #
+#   b = | b11 b12 b13 b22 b23 b33 |                                                                                                                             #
+#   => h1.T B h2 = 0, h1.T B h1 = h2.T B h2                                                                                                                     #
+#                                                                                                                                                  | b11 |      #
+#                                                                                                                                                  | b12 |      #
+#   |    h11h12              h12h21+h11h22          h12h31+h11h32                      h21h22              h22h31+h21h32             h31h32     |  | b13 |      #
+#   | h11h11-h12h12 (h11h21+h11h21)-(h12h22+h12h22) (h11h31+h11h31)-(h12h32+h12h32) h21h21-h22h22 (h21h31+h21h31)-(h22h32+h22h32) h31h31-h32h32 |  | b22 | = 0  #
+#                                                                                                                                                  | b23 |      #
+#                                                                                                                                                  | b33 |      #
+#                                                               V(2N*6)                                                                             b(6*1) = 0  #
+#################################################################################################################################################################
+
+def compute_symmetric_positive_matrix(h):
+    print('Compute b from Vb = 0...')
+    N = len(h)
+    V = np.zeros((2*N, 6))  # initialize V matrix, each image will contribute two rows
+
+    # create P matrix
+    for i in range(N):
+        H = h[i].reshape(3, 3)
+        row_1 = np.array([H[0][0]*H[0][1], H[0][1]*H[1][0]+H[0][0]*H[1][1], H[0][1]*H[2][0]+H[0][0]*H[2][1], H[1][0]*H[1][1], H[1][1]*H[2][0]+H[1][0]*H[2][1], H[2][0]*H[2][1]])
+        row_2 = np.array([H[0][0]*H[0][0]-H[0][1]*H[0][1], 2*H[0][0]*H[1][0]-2*H[0][1]*H[1][1], 2*H[0][0]*H[2][0]-2*H[0][1]*H[2][1], H[1][0]*H[1][0]-H[1][1]*H[1][1], 2*H[1][0]*H[2][0]-2*H[1][1]*H[2][1], H[2][0]*H[2][0]-H[2][1]*H[2][1]])
+        V[2*i] = row_1
+        V[2*i+1] = row_2
+
+    # print("V: {0}\n{1}".format(V.shape, V))
+    u, s, vh = np.linalg.svd(V, full_matrices=False)
+    # print("u: {0}\n{1}".format(u.shape, u))
+    # print("s: {0}\n{1}".format(s.shape, s))
+    # print("vh: {0}\n{1}".format(vh.shape, vh))
+    b = vh[np.argmin(s)]
+    print("b: {0}\n{1}".format(b.shape, b))
+    return b
+
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 # (8,6) is for the given testing images.
 # If you use the another data (e.g. pictures you take by your smartphone), 
 # you need to set the corresponding numbers.
+
 corner_x = 7
 corner_y = 7
 objp = np.zeros((corner_x*corner_y,3), np.float32)
@@ -125,7 +170,8 @@ extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
 h = np.zeros((img_num, 9))    # homography 1D matrix of all images (img_num*9)
 for i in range(len(imgpoints)):
     h[i] = compute_view_homography(imgpoints[i], objpoints[i])
-# print("h: {0}\n{1}".format(h.shape, h))
+print("h: {0}\n{1}".format(h.shape, h))
+b = compute_symmetric_positive_matrix(h)
 #######################################################################################################
 
 # show the camera extrinsics
