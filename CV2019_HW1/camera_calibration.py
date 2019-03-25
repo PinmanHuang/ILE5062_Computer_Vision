@@ -150,6 +150,7 @@ def intrinsic_matrix(b, img_size):
     #     [0, 0, 1.0],
     # ])
     print("K: {0}\n{1}".format(K.shape, K))
+    K = K/K[2,2]
     return K
 
 def extrinsic_matrix(K, h):
