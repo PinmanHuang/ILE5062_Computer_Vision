@@ -121,10 +121,12 @@ Tr = np.array(tvecs)
 extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
 """"""
 
+#######################################################################################################
 h = np.zeros((img_num, 9))    # homography 1D matrix of all images (img_num*9)
 for i in range(len(imgpoints)):
     h[i] = compute_view_homography(imgpoints[i], objpoints[i])
 # print("h: {0}\n{1}".format(h.shape, h))
+#######################################################################################################
 
 # show the camera extrinsics
 print('Show the camera extrinsics')
