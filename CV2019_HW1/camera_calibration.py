@@ -87,8 +87,22 @@ def compute_symmetric_positive_matrix(h):
     # create P matrix
     for i in range(N):
         H = h[i].reshape(3, 3)
-        row_1 = np.array([H[0][0]*H[0][1], H[0][1]*H[1][0]+H[0][0]*H[1][1], H[0][1]*H[2][0]+H[0][0]*H[2][1], H[1][0]*H[1][1], H[1][1]*H[2][0]+H[1][0]*H[2][1], H[2][0]*H[2][1]])
-        row_2 = np.array([H[0][0]*H[0][0]-H[0][1]*H[0][1], 2*H[0][0]*H[1][0]-2*H[0][1]*H[1][1], 2*H[0][0]*H[2][0]-2*H[0][1]*H[2][1], H[1][0]*H[1][0]-H[1][1]*H[1][1], 2*H[1][0]*H[2][0]-2*H[1][1]*H[2][1], H[2][0]*H[2][0]-H[2][1]*H[2][1]])
+        row_1 = np.array([
+            H[0][0]*H[0][1],
+            H[0][1]*H[1][0]+H[0][0]*H[1][1],
+            H[0][1]*H[2][0]+H[0][0]*H[2][1],
+            H[1][0]*H[1][1],
+            H[1][1]*H[2][0]+H[1][0]*H[2][1],
+            H[2][0]*H[2][1]
+        ])
+        row_2 = np.array([
+            H[0][0]*H[0][0]-H[0][1]*H[0][1],
+            2*H[0][0]*H[1][0]-2*H[0][1]*H[1][1],
+            2*H[0][0]*H[2][0]-2*H[0][1]*H[2][1],
+            H[1][0]*H[1][0]-H[1][1]*H[1][1],
+            2*H[1][0]*H[2][0]-2*H[1][1]*H[2][1],
+            H[2][0]*H[2][0]-H[2][1]*H[2][1]
+        ])
         V[2*i] = row_1
         V[2*i+1] = row_2
 
@@ -100,6 +114,25 @@ def compute_symmetric_positive_matrix(h):
     b = vh[np.argmin(s)]
     print("b: {0}\n{1}".format(b.shape, b))
     return b
+
+#############################################################################################
+#                                   Intrinsic Matrix                                        #
+#   B=inv(K.T) inv(K)                                                                       #
+#   K is an upper triangular matrix and its inverse is also an upper triangular matrix,     #
+#   so B is a lower triangular matrix multiply to upper triangular matrix,                  #
+#   then we could use Cholesky Decomposition to get the inv(K),                             #
+#   and do the inverse to find out the K.                                                   #
+#############################################################################################
+def intrinsic_matrix(b):
+    print('Intrinsic Matrix...')
+    B = np.array([
+        [b[0], b[1], b[2]],
+        [b[1], b[3], b[4]],
+        [b[3], b[4], b[5]]])
+    print("B: {0}\n{1}".format(B.shape, B))
+    K = np.linalg.inv((np.linalg.cholesky(B)).transpose())
+    print("K: {0}\n{1}".format(K.shape, K))
+    return K
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 # (8,6) is for the given testing images.
@@ -172,6 +205,7 @@ for i in range(len(imgpoints)):
     h[i] = compute_view_homography(imgpoints[i], objpoints[i])
 print("h: {0}\n{1}".format(h.shape, h))
 b = compute_symmetric_positive_matrix(h)
+intrinsic_matrix(b)
 #######################################################################################################
 
 # show the camera extrinsics
