@@ -124,14 +124,20 @@ def compute_symmetric_positive_matrix(h):
 #   then we could use Cholesky Decomposition to get the inv(K),                             #
 #   and do the inverse to find out the K.                                                   #
 #############################################################################################
-def intrinsic_matrix(b):
+def intrinsic_matrix(b, img_size):
     print('Intrinsic Matrix...')
     B = np.array([
         [b[0], b[1], b[2]],
         [b[1], b[3], b[4]],
-        [b[3], b[4], b[5]]])
+        [b[2], b[4], b[5]]
+    ])
     # print("B: {0}\n{1}".format(B.shape, B))
     K = np.linalg.inv((np.linalg.cholesky(B)).transpose())
+    # K = np.array([
+    #     [K[0,0], 0, img_size[0]/2],
+    #     [K[1,0], K[1,1], img_size[1]/2],
+    #     [K[2,0], K[2,1], 1]
+    # ])
     # vc = (b[1]*b[2] - b[0]*b[4])/(b[0]*b[3] - b[1]**2)
     # l = b[5] - (b[2]**2 + vc*(b[1]*b[3] - b[0]*b[4]))/b[0]
     # alpha = np.sqrt((l/b[0]))
@@ -246,7 +252,7 @@ for i in range(len(imgpoints)):
     h[i] = compute_view_homography(imgpoints[i], objpoints[i])
 print("h: {0}\n{1}".format(h.shape, h))
 b = compute_symmetric_positive_matrix(h)
-K = intrinsic_matrix(b)
+K = intrinsic_matrix(b, img_size)
 extrinsics = extrinsic_matrix(K, h)
 mtx = K
 #######################################################################################################
