@@ -87,7 +87,7 @@ def compute_symmetric_positive_matrix(h):
 
     # create P matrix
     for i in range(N):
-        H = h[i+3].reshape(3, 3)
+        H = h[i].reshape(3, 3)
         row_1 = np.array([
             H[0,0]*H[0,1],
             H[0,1]*H[1,0]+H[0,0]*H[1,1],
@@ -101,7 +101,7 @@ def compute_symmetric_positive_matrix(h):
             2*H[0,0]*H[1,0]-2*H[0,1]*H[1,1],
             2*H[0,0]*H[2,0]-2*H[0,1]*H[2,1],
             H[1,0]*H[1,0]-H[1,1]*H[1,1],
-            2*H[1,0]*H[2][0]-2*H[1,1]*H[2,1],
+            2*H[1,0]*H[2,0]-2*H[1,1]*H[2,1],
             H[2,0]*H[2,0]-H[2,1]*H[2,1]
         ])
         V[2*i] = row_1
