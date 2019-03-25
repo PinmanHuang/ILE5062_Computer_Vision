@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import camera_calibration_show_extrinsics as show
 from PIL import Image
 
-DEBUG = True
+DEBUG = False
 img_num = 0
 d_img_len = 3
 
@@ -81,7 +81,8 @@ def compute_view_homography(imgpoints, objpoints):
 
 def compute_symmetric_positive_matrix(h):
     print('Compute b from Vb = 0...')
-    N = len(h)
+    # N = len(h)
+    N = 3
     V = np.zeros((2*N, 6))  # initialize V matrix, each image will contribute two rows
 
     # create P matrix
@@ -129,10 +130,50 @@ def intrinsic_matrix(b):
         [b[0], b[1], b[2]],
         [b[1], b[3], b[4]],
         [b[3], b[4], b[5]]])
-    print("B: {0}\n{1}".format(B.shape, B))
+    # print("B: {0}\n{1}".format(B.shape, B))
     K = np.linalg.inv((np.linalg.cholesky(B)).transpose())
+    # vc = (b[1]*b[2] - b[0]*b[4])/(b[0]*b[3] - b[1]**2)
+    # l = b[5] - (b[2]**2 + vc*(b[1]*b[3] - b[0]*b[4]))/b[0]
+    # alpha = np.sqrt((l/b[0]))
+    # beta = np.sqrt(((l*b[0])/(b[0]*b[3] - b[1]**2)))
+    # gamma = -1*((b[1])*(alpha**2) *(beta/l))
+    # uc = (gamma*vc/beta) - (b[2]*(alpha**2)/l)
+    # K = np.array([
+    #     [alpha, gamma, uc],
+    #     [0, beta, vc],
+    #     [0, 0, 1.0],
+    # ])
     print("K: {0}\n{1}".format(K.shape, K))
     return K
+
+def extrinsic_matrix(K, h):
+    print('Extrinsic Matrix...')
+    K_inv = np.linalg.inv(K)
+    N = len(h)
+    extrinsics = np.zeros((N, 6))
+    for i in range(N):
+        H = h[i].reshape(3, 3)
+        h1 = H[:, 0]
+        h2 = H[:, 1]
+        h3 = H[:, 2]
+
+        lam = 1/np.linalg.norm(np.matmul(K_inv, h1))
+        r1T = lam*np.matmul(K_inv, h1)
+        r2T = lam*np.matmul(K_inv, h2)
+        r3T = np.cross(r1T, r2T)
+        tT = lam*np.matmul(K_inv, h3)
+
+        R = np.array([[r1T[0], r2T[0], r3T[0]], [r1T[1], r2T[1], r3T[1]], [r1T[2], r2T[2], r3T[2]]])
+        r, j = cv2.Rodrigues(R)
+        t = np.array([[tT[0]], [tT[1]], [tT[2]]])
+        row = np.array([r[0][0], r[1][0], r[2][0], t[0][0], t[1][0], t[2][0]])
+        # print("r: {0}\n{1}".format(r.shape, r))
+        # print("t: {0}\n{1}".format(t.shape, t))
+        print("row: {0}\n{1}".format(row.shape, row))
+        extrinsics[i] = row
+
+    print("extrinsics: {0}\n{1}".format(extrinsics.shape, extrinsics))
+    return extrinsics
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 # (8,6) is for the given testing images.
@@ -189,7 +230,7 @@ for idx, fname in enumerate(images):
 #######################################################################################################
 print('Camera calibration...')
 img_size = (img.shape[1], img.shape[0])
-""""""
+"""
 # You need to comment these functions and write your calibration function from scratch.
 # Notice that rvecs is rotation vector, not the rotation matrix, and tvecs is translation vector.
 # In practice, you'll derive extrinsics matrixes directly. The shape must be [pts_num,3,4], and use them to plot.
@@ -197,7 +238,7 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_siz
 Vr = np.array(rvecs)
 Tr = np.array(tvecs)
 extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
-""""""
+"""
 
 #######################################################################################################
 h = np.zeros((img_num, 9))    # homography 1D matrix of all images (img_num*9)
@@ -205,7 +246,9 @@ for i in range(len(imgpoints)):
     h[i] = compute_view_homography(imgpoints[i], objpoints[i])
 print("h: {0}\n{1}".format(h.shape, h))
 b = compute_symmetric_positive_matrix(h)
-intrinsic_matrix(b)
+K = intrinsic_matrix(b)
+extrinsics = extrinsic_matrix(K, h)
+mtx = K
 #######################################################################################################
 
 # show the camera extrinsics
@@ -249,7 +292,7 @@ ax.set_xlabel('x')
 ax.set_ylabel('z')
 ax.set_zlabel('-y')
 ax.set_title('Extrinsic Parameters Visualization')
-# plt.show()
+plt.show()
 
 #animation for rotating plot
 """
