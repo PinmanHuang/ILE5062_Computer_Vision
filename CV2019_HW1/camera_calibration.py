@@ -38,7 +38,7 @@ def compute_view_homography(imgpoints, objpoints):
     # create P matrix
     for i in range(N):
         U, V, W = objpoints[i]
-        u, v = imgpoints[i][0]
+        u, v = imgpoints[i,0]
 
         row_1 = np.array([U, V, 1, 0, 0, 0, -u*U, -u*V, -u])
         row_2 = np.array([0, 0, 0, U, V, 1, -v*U, -v*V, -v])
@@ -87,22 +87,22 @@ def compute_symmetric_positive_matrix(h):
 
     # create P matrix
     for i in range(N):
-        H = h[i].reshape(3, 3)
+        H = h[i+3].reshape(3, 3)
         row_1 = np.array([
-            H[0][0]*H[0][1],
-            H[0][1]*H[1][0]+H[0][0]*H[1][1],
-            H[0][1]*H[2][0]+H[0][0]*H[2][1],
-            H[1][0]*H[1][1],
-            H[1][1]*H[2][0]+H[1][0]*H[2][1],
-            H[2][0]*H[2][1]
+            H[0,0]*H[0,1],
+            H[0,1]*H[1,0]+H[0,0]*H[1,1],
+            H[0,1]*H[2,0]+H[0,0]*H[2,1],
+            H[1,0]*H[1,1],
+            H[1,1]*H[2,0]+H[1,0]*H[2,1],
+            H[2,0]*H[2,1]
         ])
         row_2 = np.array([
-            H[0][0]*H[0][0]-H[0][1]*H[0][1],
-            2*H[0][0]*H[1][0]-2*H[0][1]*H[1][1],
-            2*H[0][0]*H[2][0]-2*H[0][1]*H[2][1],
-            H[1][0]*H[1][0]-H[1][1]*H[1][1],
-            2*H[1][0]*H[2][0]-2*H[1][1]*H[2][1],
-            H[2][0]*H[2][0]-H[2][1]*H[2][1]
+            H[0,0]*H[0,0]-H[0,1]*H[0,1],
+            2*H[0,0]*H[1,0]-2*H[0,1]*H[1,1],
+            2*H[0,0]*H[2,0]-2*H[0,1]*H[2,1],
+            H[1,0]*H[1,0]-H[1,1]*H[1,1],
+            2*H[1,0]*H[2][0]-2*H[1,1]*H[2,1],
+            H[2,0]*H[2,0]-H[2,1]*H[2,1]
         ])
         V[2*i] = row_1
         V[2*i+1] = row_2
@@ -166,7 +166,7 @@ def extrinsic_matrix(K, h):
         R = np.array([[r1T[0], r2T[0], r3T[0]], [r1T[1], r2T[1], r3T[1]], [r1T[2], r2T[2], r3T[2]]])
         r, j = cv2.Rodrigues(R)
         t = np.array([[tT[0]], [tT[1]], [tT[2]]])
-        row = np.array([r[0][0], r[1][0], r[2][0], t[0][0], t[1][0], t[2][0]])
+        row = np.array([r[0,0], r[1,0], r[2,0], t[0,0], t[1,0], t[2,0]])
         # print("r: {0}\n{1}".format(r.shape, r))
         # print("t: {0}\n{1}".format(t.shape, t))
         print("row: {0}\n{1}".format(row.shape, row))
