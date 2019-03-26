@@ -37,7 +37,7 @@ def compute_view_homography(imgpoints, objpoints):
 
     # create P matrix
     for i in range(N):
-        U, V, W = objpoints[i]
+        U, V, _ = objpoints[i]
         u, v = imgpoints[i,0]
 
         row_1 = np.array([U, V, 1, 0, 0, 0, -u*U, -u*V, -u])
@@ -49,13 +49,13 @@ def compute_view_homography(imgpoints, objpoints):
         # print("P_model {0} \tp_row {1}".format(2*i+1, P[2*i+1]))
     
     # print("P: {0}\n{1}".format(P.shape, P))
-    u, s, vh = np.linalg.svd(P, full_matrices=False)
+    _, s, vh = np.linalg.svd(P, full_matrices=False)
     # print("u: {0}\n{1}".format(u.shape, u))
     # print("s: {0}\n{1}".format(s.shape, s))
     # print("vh: {0}\n{1}".format(vh.shape, vh))
     h = vh[np.argmin(s)]
     # print("h: {0}\n{1}".format(h.shape, h))
-    if h[8]<0:
+    if h[-1]<0:
         h = (-1)*h  # because Ph equal to zero, P(-h) will equal to zero too
     return h
 
@@ -110,12 +110,12 @@ def compute_symmetric_positive_matrix(h):
         V[2*i+1] = row_2
 
     # print("V: {0}\n{1}".format(V.shape, V))
-    u, s, vh = np.linalg.svd(V, full_matrices=False)
+    _, s, vh = np.linalg.svd(V, full_matrices=False)
     # print("u: {0}\n{1}".format(u.shape, u))
     # print("s: {0}\n{1}".format(s.shape, s))
     # print("vh: {0}\n{1}".format(vh.shape, vh))
     b = vh[np.argmin(s)]
-    if b[5]<0:
+    if b[-1]<0:
         b = (-1)*b  # because V(b) equal to zero, V(-b) will equal to zero too
     print("b: {0}\n{1}".format(b.shape, b))
     return b
@@ -157,9 +157,8 @@ def intrinsic_matrix(b, img_size):
     print("K: {0}\n{1}".format(K.shape, K))
     return K
 
-def extrinsic_matrix(K, h):
+def extrinsic_matrix(K, h, rotate_imgs):
     print('Extrinsic Matrix...')
-    K_inv = np.linalg.inv(K)
     N = len(h)
     extrinsics = np.zeros((N, 6))
     for i in range(N):
@@ -167,23 +166,62 @@ def extrinsic_matrix(K, h):
         h1 = H[:, 0]
         h2 = H[:, 1]
         h3 = H[:, 2]
-
+        K_inv = np.linalg.inv(K)    # K for non-rotation images
+        """
+        isRotate = False
+        for j in rotate_imgs:
+            if i==j:
+                isRotate = True
+                K_tmp = K.copy()
+                # K_tmp[0,2] = K[1,2]
+                # K_tmp[1,2] = (-1)*K[0,2]
+                # K_tmp[0,0] = K[1,1]
+                # K_tmp[1,1] = K[0,0]
+                K_inv = np.linalg.inv(K_tmp)  # K for rotation images
+        """
         lam = 1/np.linalg.norm(np.matmul(K_inv, h1))
         r1T = lam*np.matmul(K_inv, h1)
         r2T = lam*np.matmul(K_inv, h2)
         r3T = np.cross(r1T, r2T)
         tT = lam*np.matmul(K_inv, h3)
-
-        R = np.array([[r1T[0], r2T[0], r3T[0]], [r1T[1], r2T[1], r3T[1]], [r1T[2], r2T[2], r3T[2]]])
-        r, j = cv2.Rodrigues(R)
+        """
+        if isRotate:
+            R = np.array([
+                [r1T[0], r2T[0], r3T[0]],
+                [r1T[1], r2T[1], r3T[1]],
+                [r1T[2], r2T[2], r3T[2]]
+            ])
+            rotate = np.array([
+                [0, 1, 0],
+                [-1, 0, 0],
+                [0, 0, 1]
+            ])
+            t = np.array([[tT[0]], [tT[1]], [tT[2]]])
+            c = np.matmul(np.linalg.inv(R), t)
+            
+            R = np.matmul(rotate, R)
+            t = np.matmul(R, c)
+        else:
+            R = np.array([
+                [r1T[0], r2T[0], r3T[0]],
+                [r1T[1], r2T[1], r3T[1]],
+                [r1T[2], r2T[2], r3T[2]]
+            ])
+            t = np.array([[tT[0]], [tT[1]], [tT[2]]])
+        """
+        R = np.array([
+            [r1T[0], r2T[0], r3T[0]],
+            [r1T[1], r2T[1], r3T[1]],
+            [r1T[2], r2T[2], r3T[2]]
+        ])
         t = np.array([[tT[0]], [tT[1]], [tT[2]]])
+        r, _ = cv2.Rodrigues(R)
         row = np.array([r[0,0], r[1,0], r[2,0], t[0,0], t[1,0], t[2,0]])
         # print("r: {0}\n{1}".format(r.shape, r))
         # print("t: {0}\n{1}".format(t.shape, t))
         # print("row: {0}\n{1}".format(row.shape, row))
-        # if row[5]<0:
-        #     row = (-1)*row
         extrinsics[i] = row
+
     print("extrinsics: {0}\n{1}".format(extrinsics.shape, extrinsics))
     return extrinsics
 
@@ -200,6 +238,7 @@ objp[:,:2] = np.mgrid[0:corner_x, 0:corner_y].T.reshape(-1,2)
 # Arrays to store object points and image points from all the images.
 objpoints = [] # 3d points in real world space
 imgpoints = [] # 2d points in image plane.
+rotate_imgs = []
 
 # Make a list of calibration images
 images = glob.glob('data/*.jpg')
@@ -211,6 +250,9 @@ for idx, fname in enumerate(images):
     if DEBUG and img_num == d_img_len:
         break
     img = cv2.imread(fname)
+    if img.shape[1]>img.shape[0]:   # horizontal images -> do the rotate
+        img = np.rot90(img)
+        rotate_imgs.append(img_num)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # plt.imshow(gray, cmap='gray')
     # plt.show()
@@ -221,6 +263,7 @@ for idx, fname in enumerate(images):
 
     # If found, add object points, image points
     if ret == True:
+        img_size = (img.shape[1], img.shape[0])
         objpoints.append(objp)
         imgpoints.append(corners)
 
@@ -230,7 +273,7 @@ for idx, fname in enumerate(images):
         # plt.imshow(img, cmap='gray')
         # plt.show()
     img_num += 1
-
+print("rotate_imgs: {0}".format(rotate_imgs))
 #######################################################################################################
 #                                Homework 1 Camera Calibration                                        #
 #               You need to implement camera calibration(02-camera p.76-80) here.                     #
@@ -259,7 +302,7 @@ for i in range(len(imgpoints)):
 print("h: {0}\n{1}".format(h.shape, h))
 b = compute_symmetric_positive_matrix(h)
 K = intrinsic_matrix(b, img_size)
-extrinsics = extrinsic_matrix(K, h)
+extrinsics = extrinsic_matrix(K, h, rotate_imgs)
 mtx = K
 #######################################################################################################
 
