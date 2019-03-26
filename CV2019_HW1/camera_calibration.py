@@ -55,10 +55,12 @@ def compute_view_homography(imgpoints, objpoints):
     # print("vh: {0}\n{1}".format(vh.shape, vh))
     h = vh[np.argmin(s)]
     # print("h: {0}\n{1}".format(h.shape, h))
+    if h[8]<0:
+        h = (-1)*h  # because Ph equal to zero, P(-h) will equal to zero too
     return h
 
 #################################################################################################################################################################
-#                       Compute Symmetric Positive Matrix                                                                                                       #
+#                                                               Compute Symmetric Positive Matrix                                                               #
 #   N = images numbers (needing at least 3 images to compute b matrix)                                                                                          #
 #   Vb = 0                                                                                                                                                      #
 #   h = | h11 h12 h13 h21 h22 h23 h31 h32 h33 |                                                                                                                 #
@@ -179,8 +181,9 @@ def extrinsic_matrix(K, h):
         # print("r: {0}\n{1}".format(r.shape, r))
         # print("t: {0}\n{1}".format(t.shape, t))
         # print("row: {0}\n{1}".format(row.shape, row))
+        # if row[5]<0:
+        #     row = (-1)*row
         extrinsics[i] = row
-
     print("extrinsics: {0}\n{1}".format(extrinsics.shape, extrinsics))
     return extrinsics
 
