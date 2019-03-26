@@ -54,7 +54,7 @@ def compute_view_homography(imgpoints, objpoints):
     # print("s: {0}\n{1}".format(s.shape, s))
     # print("vh: {0}\n{1}".format(vh.shape, vh))
     h = vh[np.argmin(s)]
-    print("h: {0}\n{1}".format(h.shape, h))
+    # print("h: {0}\n{1}".format(h.shape, h))
     return h
 
 #################################################################################################################################################################
@@ -178,7 +178,7 @@ def extrinsic_matrix(K, h):
         row = np.array([r[0,0], r[1,0], r[2,0], t[0,0], t[1,0], t[2,0]])
         # print("r: {0}\n{1}".format(r.shape, r))
         # print("t: {0}\n{1}".format(t.shape, t))
-        print("row: {0}\n{1}".format(row.shape, row))
+        # print("row: {0}\n{1}".format(row.shape, row))
         extrinsics[i] = row
 
     print("extrinsics: {0}\n{1}".format(extrinsics.shape, extrinsics))
