@@ -81,8 +81,8 @@ def compute_view_homography(imgpoints, objpoints):
 
 def compute_symmetric_positive_matrix(h):
     print('Compute b from Vb = 0...')
-    # N = len(h)
-    N = 3
+    N = len(h)
+    # N = 3
     V = np.zeros((2*N, 6))  # initialize V matrix, each image will contribute two rows
 
     # create P matrix
@@ -113,6 +113,8 @@ def compute_symmetric_positive_matrix(h):
     # print("s: {0}\n{1}".format(s.shape, s))
     # print("vh: {0}\n{1}".format(vh.shape, vh))
     b = vh[np.argmin(s)]
+    if b[5]<0:
+        b = (-1)*b  # because V(b) equal to zero, V(-b) will equal to zero too
     print("b: {0}\n{1}".format(b.shape, b))
     return b
 
@@ -149,8 +151,8 @@ def intrinsic_matrix(b, img_size):
     #     [0, beta, vc],
     #     [0, 0, 1.0],
     # ])
+    K = K/K[2,2]    # do the normalization
     print("K: {0}\n{1}".format(K.shape, K))
-    K = K/K[2,2]
     return K
 
 def extrinsic_matrix(K, h):
