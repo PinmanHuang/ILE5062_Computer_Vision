@@ -137,78 +137,41 @@ def intrinsic_matrix(b, img_size):
     ])
     # print("B: {0}\n{1}".format(B.shape, B))
     K = np.linalg.inv((np.linalg.cholesky(B)).transpose())
-    # K = np.array([
-    #     [K[0,0], 0, img_size[0]/2],
-    #     [K[1,0], K[1,1], img_size[1]/2],
-    #     [K[2,0], K[2,1], 1]
-    # ])
-    # vc = (b[1]*b[2] - b[0]*b[4])/(b[0]*b[3] - b[1]**2)
-    # l = b[5] - (b[2]**2 + vc*(b[1]*b[3] - b[0]*b[4]))/b[0]
-    # alpha = np.sqrt((l/b[0]))
-    # beta = np.sqrt(((l*b[0])/(b[0]*b[3] - b[1]**2)))
-    # gamma = -1*((b[1])*(alpha**2) *(beta/l))
-    # uc = (gamma*vc/beta) - (b[2]*(alpha**2)/l)
-    # K = np.array([
-    #     [alpha, gamma, uc],
-    #     [0, beta, vc],
-    #     [0, 0, 1.0],
-    # ])
     K = K/K[2,2]    # do the normalization
     print("K: {0}\n{1}".format(K.shape, K))
     return K
 
-def extrinsic_matrix(K, h, rotate_imgs):
+def extrinsic_matrix(K, h, h_r, rotate_imgs):
     print('Extrinsic Matrix...')
     N = len(h)
     extrinsics = np.zeros((N, 6))
+    rotate_index = 0
     for i in range(N):
         H = h[i].reshape(3, 3)
         h1 = H[:, 0]
         h2 = H[:, 1]
         h3 = H[:, 2]
         K_inv = np.linalg.inv(K)    # K for non-rotation images
-        """
-        isRotate = False
+        
         for j in rotate_imgs:
             if i==j:
-                isRotate = True
+                H = h_r[rotate_index].reshape(3, 3) # H of rotation images
+                h1 = H[:, 0]
+                h2 = H[:, 1]
+                h3 = H[:, 2]
                 K_tmp = K.copy()
-                # K_tmp[0,2] = K[1,2]
-                # K_tmp[1,2] = (-1)*K[0,2]
-                # K_tmp[0,0] = K[1,1]
-                # K_tmp[1,1] = K[0,0]
-                K_inv = np.linalg.inv(K_tmp)  # K for rotation images
-        """
+                K_tmp[0,2] = K[1,2]
+                K_tmp[1,2] = K[0,2]
+                K_tmp[0,0] = K[1,1]
+                K_tmp[1,1] = K[0,0]
+                K_inv = np.linalg.inv(K_tmp)  # K of rotation images
+                rotate_index += 1
+        
         lam = 1/np.linalg.norm(np.matmul(K_inv, h1))
         r1T = lam*np.matmul(K_inv, h1)
         r2T = lam*np.matmul(K_inv, h2)
         r3T = np.cross(r1T, r2T)
         tT = lam*np.matmul(K_inv, h3)
-        """
-        if isRotate:
-            R = np.array([
-                [r1T[0], r2T[0], r3T[0]],
-                [r1T[1], r2T[1], r3T[1]],
-                [r1T[2], r2T[2], r3T[2]]
-            ])
-            rotate = np.array([
-                [0, 1, 0],
-                [-1, 0, 0],
-                [0, 0, 1]
-            ])
-            t = np.array([[tT[0]], [tT[1]], [tT[2]]])
-            c = np.matmul(np.linalg.inv(R), t)
-            
-            R = np.matmul(rotate, R)
-            t = np.matmul(R, c)
-        else:
-            R = np.array([
-                [r1T[0], r2T[0], r3T[0]],
-                [r1T[1], r2T[1], r3T[1]],
-                [r1T[2], r2T[2], r3T[2]]
-            ])
-            t = np.array([[tT[0]], [tT[1]], [tT[2]]])
-        """
         R = np.array([
             [r1T[0], r2T[0], r3T[0]],
             [r1T[1], r2T[1], r3T[1]],
@@ -236,8 +199,10 @@ objp = np.zeros((corner_x*corner_y,3), np.float32)
 objp[:,:2] = np.mgrid[0:corner_x, 0:corner_y].T.reshape(-1,2)
 
 # Arrays to store object points and image points from all the images.
-objpoints = [] # 3d points in real world space
-imgpoints = [] # 2d points in image plane.
+objpoints = []      # 3d points in real world space.
+objpoints_r = []    # 3d points of rotation images in real world space.
+imgpoints = []      # 2d points in image plane.
+imgpoints_r = []    # 2d points of rotation images in image plane.
 rotate_imgs = []
 
 # Make a list of calibration images
@@ -247,23 +212,36 @@ sorted(glob.glob('*.png'))
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
 for idx, fname in enumerate(images):
+    need_rotate = 0
     if DEBUG and img_num == d_img_len:
         break
     img = cv2.imread(fname)
-    if img.shape[1]>img.shape[0]:   # horizontal images -> do the rotate
-        img = np.rot90(img)
-        rotate_imgs.append(img_num)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # plt.imshow(gray, cmap='gray')
     # plt.show()
 
     #Find the chessboard corners
     print('find the chessboard corners of',fname)
-    ret, corners = cv2.findChessboardCorners(gray, (corner_x,corner_y), None)   # search from top-left
+    if gray.shape[1]>gray.shape[0]:   # horizontal images -> do the rotate
+        need_rotate = 1
+        gray_ori = gray.copy()
+        gray = np.rot90(gray)
+        rotate_imgs.append(img_num)
+    if need_rotate:    
+        ret_r, corners_r = cv2.findChessboardCorners(gray_ori, (corner_x, corner_y), None)   # search from top-left
+        if ret_r == True:
+            objpoints_r.append(objp)
+            imgpoints_r.append(corners_r)
 
+            # Draw and display the corners
+            cv2.drawChessboardCorners(img, (corner_x,corner_y), corners, ret)
+            
+            # plt.imshow(img, cmap='gray')
+            # plt.show()
+
+    ret, corners = cv2.findChessboardCorners(gray, (corner_x,corner_y), None)   # search from top-left
     # If found, add object points, image points
     if ret == True:
-        img_size = (img.shape[1], img.shape[0])
         objpoints.append(objp)
         imgpoints.append(corners)
 
@@ -272,8 +250,9 @@ for idx, fname in enumerate(images):
         
         # plt.imshow(img, cmap='gray')
         # plt.show()
+    
     img_num += 1
-print("rotate_imgs: {0}".format(rotate_imgs))
+
 #######################################################################################################
 #                                Homework 1 Camera Calibration                                        #
 #               You need to implement camera calibration(02-camera p.76-80) here.                     #
@@ -297,12 +276,16 @@ extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
 
 #######################################################################################################
 h = np.zeros((img_num, 9))    # homography 1D matrix of all images (img_num*9)
+h_r = np.zeros((len(rotate_imgs), 9))
 for i in range(len(imgpoints)):
     h[i] = compute_view_homography(imgpoints[i], objpoints[i])
+for i in range(len(imgpoints_r)):
+    h_r[i] = compute_view_homography(imgpoints_r[i], objpoints_r[i])
 print("h: {0}\n{1}".format(h.shape, h))
+print("h_r: {0}\n{1}".format(h_r.shape, h_r))
 b = compute_symmetric_positive_matrix(h)
 K = intrinsic_matrix(b, img_size)
-extrinsics = extrinsic_matrix(K, h, rotate_imgs)
+extrinsics = extrinsic_matrix(K, h, h_r, rotate_imgs)
 mtx = K
 #######################################################################################################
 
