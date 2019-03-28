@@ -61,4 +61,9 @@ W                   |  |                       |  |                       |  |
 ![equation](https://latex.codecogs.com/svg.latex?%5Cleft%20%28%20M%3D%20%5Cbegin%7Bbmatrix%7D%20m_%7B11%7D%20%26%20m_%7B12%7D%20%26%20m_%7B13%7D%20%26%20m_%7B14%7D%5C%5C%20m_%7B21%7D%20%26%20m_%7B22%7D%20%26%20m_%7B23%7D%20%26%20m_%7B24%7D%5C%5C%20m_%7B31%7D%20%26%20m_%7B32%7D%20%26%20m_%7B33%7D%20%26%20m_%7B34%7D%20%5Cend%7Bbmatrix%7D%20%5Cright%20%29)
 
 From above relations of each coordinate, we could get:
- 
+
+![equation_E1](https://latex.codecogs.com/svg.latex?%5Cbegin%7Bbmatrix%7D%20X%5C%5C%20Y%5C%5C%20Z%5C%5C%201%20%5Cend%7Bbmatrix%7D%3D%20%5Cbegin%7Bbmatrix%7D%20r_%7B11%7D%20%26%20r_%7B12%7D%20%26%20r_%7B13%7D%20%26%200%5C%5C%20r_%7B21%7D%20%26%20r_%7B22%7D%20%26%20r_%7B23%7D%20%26%200%5C%5C%20r_%7B31%7D%20%26%20r_%7B32%7D%20%26%20r_%7B33%7D%20%26%200%5C%5C%200%20%26%200%20%26%200%20%26%201%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%201%20%26%200%20%26%200%20%26%20-c_%7Bx%7D%5C%5C%200%20%26%201%20%26%200%20%26%20-c_%7By%7D%5C%5C%200%20%26%200%20%26%201%20%26%20-c_%7Bz%7D%5C%5C%200%20%26%200%20%26%200%20%26%201%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20U%5C%5C%20V%5C%5C%20W%5C%5C%201%20%5Cend%7Bbmatrix%7D)
+
+![euqation_E2](https://latex.codecogs.com/svg.latex?%5Cbegin%7Bbmatrix%7D%20x%27%5C%5C%20y%27%5C%5C%20z%27%20%5Cend%7Bbmatrix%7D%3D%20%5Cbegin%7Bbmatrix%7D%20%5Cfrac%7B%5Cboldsymbol%7Bf%7D%7D%7Bs_%7Bx%7D%7D%20%26%20s_%7Bk%7D%20%26%20o_%7Bx%7D%20%26%200%5C%5C%200%20%26%20%5Cfrac%7B%5Cboldsymbol%7Bf%7D%7D%7Bs_%7By%7D%7D%20%26%20o_%7By%7D%20%26%200%5C%5C%200%20%26%200%20%26%201%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20X%5C%5C%20Y%5C%5C%20Z%5C%5C%201%20%5Cend%7Bbmatrix%7D)
+
+![equation_E3](https://latex.codecogs.com/svg.latex?%5CRightarrow%20x%3DK%5Cbegin%7Bbmatrix%7D%20R%20%26%20r%20%5Cend%7Bbmatrix%7DX)
