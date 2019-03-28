@@ -145,3 +145,14 @@ From these two equations, we could get:
 
 ## Experimental Result
 
+The intrinsic matrix of using opencv library and implementing myself.
+
+![equation_J1](https://latex.codecogs.com/svg.latex?%5Cbegin%7Bmatrix%7D%20K%5Cleft%20%28%20opencv%20%5Cright%20%29%3D%20%5Cbegin%7Bbmatrix%7D%203.17677524%5Ctimes%2010%5E%7B3%7D%20%26%200%20%26%201.64148716%5Ctimes%2010%5E%7B3%7D%5C%5C%200%20%26%203.19706975%5Ctimes%2010%5E%7B3%7D%20%26%201.43116675%5Ctimes%2010%5E%7B3%7D%5C%5C%200%20%26%200%20%26%201%20%5Cend%7Bbmatrix%7D%5C%5C%20%5C%5C%20K%5Cleft%20%28%20ours%20%5Cright%20%29%3D%20%5Cbegin%7Bbmatrix%7D%202.98653567%5Ctimes%2010%5E%7B3%7D%20%26%20-1.69915365%20%26%201.46421577%5Ctimes%2010%5E%7B3%7D%5C%5C%200%20%26%202.99318403%5Ctimes%2010%5E%7B3%7D%20%26%201.95176612%5Ctimes%2010%5E%7B3%7D%5C%5C%200%20%26%200%20%26%201%20%5Cend%7Bbmatrix%7D%20%5Cend%7Bmatrix%7D)
+
+We could see the results of these two intrinsic matrixs are very similar.
+
+And the extrinsic results are:
+
+OpenCV                      |       Ours 
+:--------------------------:|:----------------------------:
+![OpenCV](./img/sample.png) |![Ours](./img/implement.png)
