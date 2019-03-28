@@ -3,7 +3,7 @@ Practice how to implement camera calibration.
 
 ## Introduction
 
-## 1. Coordinate System
+### 1. Coordinate System
 We could divide coordinate into four kinds, World, Camera, Fil, and Pixel coordinates.
 
 World Coordinates   |   Camera Coordinates  |   Film Coordinates    |   Pixel Coordinates
