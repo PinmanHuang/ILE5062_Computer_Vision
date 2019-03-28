@@ -44,6 +44,7 @@ U                   |  |           X           |  |           x           |  |  
 V                   | ![equation_D](https://latex.codecogs.com/svg.latex?%5CLARGE%20%5Coverset%7BM_%7Bext%7D%7D%7B%5CRightarrow%7D) |           Y           | ![equation](https://latex.codecogs.com/svg.latex?%5CLARGE%20%5Coverset%7BM_%7Bproj%7D%7D%7B%5CRightarrow%7D) |           y           | ![equation](https://latex.codecogs.com/svg.latex?%5CLARGE%20%5Coverset%7BM_%7Baff%7D%7D%7B%5CRightarrow%7D) |           v
 W                   |  |           Z           |  |                       |  |   
 
+![equation](https://latex.codecogs.com/svg.latex?%5Cleft%20%28%20M_%7Bext%7D%3D%20%5Cbegin%7Bbmatrix%7D%20r_%7B11%7D%20%26%20r_%7B12%7D%20%26%20r_%7B13%7D%20%26%20t_%7Bx%7D%5C%5C%20r_%7B21%7D%20%26%20r_%7B22%7D%20%26%20r_%7B23%7D%20%26%20t_%7By%7D%5C%5C%20r_%7B31%7D%20%26%20r_%7B32%7D%20%26%20r_%7B33%7D%20%26%20t_%7Bz%7D%5C%5C%200%20%26%200%20%26%200%20%26%201%20%5Cend%7Bbmatrix%7D%2C%20M_%7Bproj%7D%3D%20%5Cbegin%7Bbmatrix%7D%20%5Cboldsymbol%7Bf%7D%20%26%200%20%26%200%20%26%200%5C%5C%200%20%26%20%5Cboldsymbol%7Bf%7D%20%26%200%20%26%200%5C%5C%200%20%26%200%20%26%201%20%26%200%20%5Cend%7Bbmatrix%7D%2C%20M_%7Baff%7D%20%5Cbegin%7Bbmatrix%7D%20a_%7B11%7D%20%26%20a_%7B12%7D%20%26%20a_%7B13%7D%5C%5C%20a_%7B21%7D%20%26%20a_%7B22%7D%20%26%20a_%7B23%7D%5C%5C%200%20%26%200%20%26%201%20%5Cend%7Bbmatrix%7D%20%5Cright%20%29)
 
 World Coordinates   |  |   Camera Coordinates  |  |   Film Coordinates    |  |   Pixel Coordinates
 :------------------:|--|:---------------------:|--|:---------------------:|--|:------------------:
@@ -56,3 +57,8 @@ World Coordinates   |  |   Camera Coordinates  |  |   Film Coordinates    |  |  
 U                   |  |                       |  |                       |  |          u
 V                   |  |                       |  |     ![equation](https://latex.codecogs.com/svg.latex?%5CLARGE%20%5Coverset%7BM%7D%7B%5CRightarrow%7D)                  |  |          v
 W                   |  |                       |  |                       |  |
+
+![equation](https://latex.codecogs.com/svg.latex?%5Cleft%20%28%20M%3D%20%5Cbegin%7Bbmatrix%7D%20m_%7B11%7D%20%26%20m_%7B12%7D%20%26%20m_%7B13%7D%20%26%20m_%7B14%7D%5C%5C%20m_%7B21%7D%20%26%20m_%7B22%7D%20%26%20m_%7B23%7D%20%26%20m_%7B24%7D%5C%5C%20m_%7B31%7D%20%26%20m_%7B32%7D%20%26%20m_%7B33%7D%20%26%20m_%7B34%7D%20%5Cend%7Bbmatrix%7D%20%5Cright%20%29)
+
+From above relations of each coordinate, we could get:
+ 
